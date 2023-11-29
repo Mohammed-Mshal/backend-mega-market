@@ -69,15 +69,19 @@ const deleteUserCart = asyncWrapper(async (req, res, next) => {
     return next(error);
   }
   const user = await userModel.findOne({ _id: req.user.id });
-  if(!user.cart.includes(productId)){
-    const error = appError.create("Product Is Not Valid In User Cart!", 400, FAIL);
+  if (!user.cart.includes(productId)) {
+    const error = appError.create(
+      "Product Is Not Valid In User Cart!",
+      400,
+      FAIL
+    );
     return next(error);
   }
   const newUserCart = user.cart.filter((val) => val != productId);
   await user.updateOne({ cart: newUserCart });
   return res.status(200).json({
     data: {
-      message:"Product Is Removing From User Cart",
+      message: "Product Is Removing From User Cart",
     },
     status: SUCCESS,
   });
@@ -145,15 +149,19 @@ const deleteUserWishlist = asyncWrapper(async (req, res, next) => {
     return next(error);
   }
   const user = await userModel.findOne({ _id: req.user.id });
-  if(!user.wishlist.includes(productId)){
-    const error = appError.create("Product Is Not Valid In User Wishlist!", 400, FAIL);
+  if (!user.wishlist.includes(productId)) {
+    const error = appError.create(
+      "Product Is Not Valid In User Wishlist!",
+      400,
+      FAIL
+    );
     return next(error);
   }
   const newUserCart = user.wishlist.filter((val) => val != productId);
   await user.updateOne({ wishlist: newUserCart });
   return res.status(200).json({
     data: {
-      message:"Product Is Removing From User Wishlist",
+      message: "Product Is Removing From User Wishlist",
     },
     status: SUCCESS,
   });
@@ -186,8 +194,6 @@ const deleteProduct = asyncWrapper(async (req, res, next) => {
   });
 });
 const addProduct = asyncWrapper(async (req, res, next) => {
-  const images = req.files["photos"];
-
   const infoProduct = req.body;
   if (!infoProduct.title) {
     const error = appError.create("Title Product Is Required", 400, FAIL);
@@ -228,23 +234,25 @@ const addProduct = asyncWrapper(async (req, res, next) => {
     );
     return next(error);
   }
-  const imagesPath = [];
-  fs.mkdirSync(
-    path.join(__dirname, `../uploads`, req.user.id, infoProduct.title),
-    {
-      recursive: true,
-    }
-  );
-  images.forEach((image) => {
-    const imagePath = path.join(
-      __dirname,
-      `../uploads`,
-      req.user.id,
-      infoProduct.title,
-      image.name
-    );
-    fs.writeFileSync(imagePath, image.data);
-    imagesPath.push(imagePath);
+  const imagesFromRequest = req.files["photos"];
+  const images = [];
+  // fs.mkdirSync(
+  //   path.join(__dirname, `../uploads`, req.user.id, infoProduct.title),
+  //   {
+  //     recursive: true,
+  //   }
+  // );
+  imagesFromRequest.forEach(async (image) => {
+    //const imagePath = path.join(
+    //   __dirname,
+    //   `../uploads`,
+    //   req.user.id,
+    //   infoProduct.title,
+    //   image.name
+    // );
+    // fs.writeFileSync(imagePath, image.data);
+    // imagesData.push({ data: image.data, contentType: image.mimetype });
+    images.push({ data: image.data.toString("base64"), contentType: image.mimeType });
   });
   const newProduct = await productModel.create({
     title: infoProduct.title,
@@ -253,7 +261,7 @@ const addProduct = asyncWrapper(async (req, res, next) => {
     description: infoProduct.description,
     idAuthor: req.user.id,
     offer: infoProduct.offer,
-    image: imagesPath,
+    image: images,
   });
   return res.status(200).json({
     data: {
@@ -380,6 +388,7 @@ const updateProduct = asyncWrapper(async (req, res, next) => {
     status: SUCCESS,
   });
 });
+
 module.exports = {
   getUserCart,
   addUserCart,

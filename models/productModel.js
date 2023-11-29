@@ -34,7 +34,12 @@ const productSchema = new mongoose.Schema(
       required: true,
     },
     image: {
-      type: [String],
+      type: [
+        {
+          data: String,
+          contentType: String,
+        },
+      ],
       default: [],
     },
     idAuthor: {
